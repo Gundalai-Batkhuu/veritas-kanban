@@ -15,9 +15,10 @@ export type AppView =
   | 'archive'
   | 'templates'
   | 'workflows'
+  | 'policies'
   | 'decisions';
 
-const BASE_PATH = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+const basePath = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
 
 const VIEW_PATHS: Record<AppView, string> = {
   board: '/',
@@ -26,17 +27,22 @@ const VIEW_PATHS: Record<AppView, string> = {
   archive: '/archive',
   templates: '/templates',
   workflows: '/workflows',
+  policies: '/policies',
   decisions: '/decisions',
 };
 
-function getViewFromPath(pathname: string): AppView {
-  const relativePath =
-    BASE_PATH && pathname.startsWith(BASE_PATH)
-      ? pathname.slice(BASE_PATH.length) || '/'
-      : pathname;
-  const normalized = relativePath.replace(/\/+$/, '') || '/';
-  const match = Object.entries(VIEW_PATHS).find(([, path]) => path === normalized);
-  return (match?.[0] as AppView | undefined) ?? 'board';
+function normalizeAppPath(pathname: string): string {
+  const normalized = pathname.startsWith(basePath)
+    ? pathname.slice(basePath.length) || '/'
+    : pathname;
+  return normalized === '' ? '/' : normalized.replace(/\/+$/, '') || '/';
+}
+
+function getViewFromLocation(): AppView {
+  if (typeof window === 'undefined') return 'board';
+  const path = normalizeAppPath(window.location.pathname);
+  const entry = Object.entries(VIEW_PATHS).find(([, value]) => value === path);
+  return (entry?.[0] as AppView | undefined) || 'board';
 }
 
 interface ViewContextValue {
@@ -58,16 +64,29 @@ const ViewContext = createContext<ViewContextValue>({
 });
 
 export function ViewProvider({ children }: { children: ReactNode }) {
-  const [view, setView] = useState<AppView>(() => {
-    if (typeof window === 'undefined') return 'board';
-    return getViewFromPath(window.location.pathname);
-  });
+  const [view, setViewState] = useState<AppView>(() => getViewFromLocation());
   const [pendingTaskId, setPendingTaskId] = useState<string | null>(null);
 
-  const navigateToTask = useCallback((taskId: string) => {
-    setPendingTaskId(taskId);
-    setView('board');
+  const setView = useCallback((nextView: AppView) => {
+    setViewState(nextView);
+
+    if (typeof window === 'undefined') return;
+
+    const nextPath = `${basePath}${VIEW_PATHS[nextView]}`.replace(/\/+/g, '/');
+    const nextUrl = nextView === 'board' ? `${nextPath}${window.location.search}` : nextPath;
+    const currentPath = `${window.location.pathname}${window.location.search}`;
+    if (currentPath !== nextUrl) {
+      window.history.pushState({}, '', nextUrl);
+    }
   }, []);
+
+  const navigateToTask = useCallback(
+    (taskId: string) => {
+      setPendingTaskId(taskId);
+      setView('board');
+    },
+    [setView]
+  );
 
   const clearPendingTask = useCallback(() => {
     setPendingTaskId(null);
@@ -75,25 +94,14 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({ view, setView, navigateToTask, pendingTaskId, clearPendingTask }),
-    [view, navigateToTask, pendingTaskId, clearPendingTask]
+    [view, setView, navigateToTask, pendingTaskId, clearPendingTask]
   );
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const targetPath = `${BASE_PATH}${VIEW_PATHS[view]}`.replace(/\/+$/, '') || '/';
-    const currentPath = window.location.pathname.replace(/\/+$/, '') || '/';
-    if (currentPath !== targetPath) {
-      window.history.replaceState(
-        {},
-        '',
-        `${targetPath}${window.location.search}${window.location.hash}`
-      );
-    }
-  }, [view]);
+    const handlePopState = () => {
+      setViewState(getViewFromLocation());
+    };
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const handlePopState = () => setView(getViewFromPath(window.location.pathname));
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);

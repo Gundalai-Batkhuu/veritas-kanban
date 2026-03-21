@@ -12,7 +12,14 @@
 import fs from 'node:fs';
 import type { FSWatcher } from 'node:fs';
 import { EventEmitter } from 'node:events';
-import { access } from 'node:fs/promises';
+import {
+  access,
+  mkdir as mkdirAsync,
+  readFile as readFileAsync,
+  readdir as readdirAsync,
+  unlink as unlinkAsync,
+  writeFile as writeFileAsync,
+} from 'node:fs/promises';
 
 // ---------------------------------------------------------------------------
 // Synchronous helpers (used by security config, agent status persistence)
@@ -58,11 +65,11 @@ export const createWriteStream = fs.createWriteStream;
 // Async helpers
 // ---------------------------------------------------------------------------
 
-export const readFile = fs.promises.readFile.bind(fs.promises);
-export const writeFile = fs.promises.writeFile.bind(fs.promises);
-export const mkdir = fs.promises.mkdir.bind(fs.promises);
-export const readdir = fs.promises.readdir.bind(fs.promises);
-export const unlink = fs.promises.unlink.bind(fs.promises);
+export const mkdir = mkdirAsync;
+export const readFile = readFileAsync;
+export const readdir = readdirAsync;
+export const unlink = unlinkAsync;
+export const writeFile = writeFileAsync;
 
 /**
  * Async file-existence check.
