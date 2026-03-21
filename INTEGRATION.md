@@ -1,80 +1,70 @@
-# Integration Guide — Global System Health Status Bar (#185)
+# Integration Guide — Issue #183: Draggable & Resizable Dashboard Widget Grid
 
-## What was built
+## What Was Created
 
 | File | Purpose |
 |------|---------|
-| `shared/src/types/system-health.types.ts` | `HealthLevel`, `HealthStatus`, `HealthSignal`, and signal types shared across server + web |
-| `server/src/services/system-health-service.ts` | `SystemHealthService` class + `getSystemHealthService()` singleton — aggregates telemetry into `HealthStatus` |
-| `web/src/lib/api/system-health.ts` | `systemHealthApi.getStatus()` — typed fetch wrapper for `GET /api/v1/system/health` |
-| `web/src/hooks/useSystemHealth.ts` | React Query hook; polls every 30 s (60 s when WS disconnected) |
-| `web/src/components/health/SystemHealthBar.tsx` | The persistent UI component — thin strip + expandable detail panel |
-| `web/src/components/layout/SystemHealthBar.tsx` | Already present on `main` — thin strip implementation using inline types |
+| `web/src/hooks/useDashboardLayout.ts` | localStorage persistence + versioning for widget layouts |
+| `web/src/components/dashboard/WidgetWrapper.tsx` | Wrapper with drag handle, title, "View all →" link |
+| `web/src/components/dashboard/WidgetGrid.tsx` | `<ResponsiveGridLayout>` component using react-grid-layout |
+| `web/src/components/dashboard/DashboardPage.tsx` | Full dashboard that uses WidgetGrid instead of fixed layout |
 
-> **Note:** `web/src/components/health/SystemHealthBar.tsx` is the canonical new implementation
-> using the shared `HealthLevel` type and the spec-required icons (`ShieldCheck`, `AlertCircle`).
-> The `layout/SystemHealthBar.tsx` version that already existed on `main` is functionally
-> equivalent; Brad should pick one when merging.
+## Changes Required in Existing Files
 
----
+### 1. `web/src/components/board/KanbanBoard.tsx`
 
-## App.tsx integration
-
-Place `<SystemHealthBar />` **directly below `<Header />`**, before `<main>`:
-
+**Current code (around line 30):**
 ```tsx
-// web/src/App.tsx  (excerpt — Brad will merge manually)
-import { SystemHealthBar } from './components/health/SystemHealthBar';
-// or keep the existing import from layout/:
-// import { SystemHealthBar } from './components/layout/SystemHealthBar';
-
-// Inside the JSX tree:
-<div className="min-h-screen bg-background">
-  <SkipToContent />
-  <Header />
-  <SystemHealthBar />          {/* ← insert here */}
-  <main id="main-content" className="mx-auto px-14 py-6" tabIndex={-1}>
-    <ErrorBoundary level="section">
-      <MainContent />
-    </ErrorBoundary>
-  </main>
-  <Toaster />
-  <CommandPalette />
-  <FloatingChat />
-</div>
+const Dashboard = lazy(() =>
+  import('@/components/dashboard/Dashboard').then((mod) => ({
+    default: mod.Dashboard,
+  }))
+);
 ```
 
-`App.tsx` on `main` already has this import and placement — no action needed unless you
-chose the `components/health/` version.
+**Change to:**
+```tsx
+const Dashboard = lazy(() =>
+  import('@/components/dashboard/DashboardPage').then((mod) => ({
+    default: mod.DashboardPage,
+  }))
+);
+```
+
+**Also update the usage site (around line 315):**
+```tsx
+// Before:
+<Dashboard />
+
+// After (no change needed if you update the import above — the variable is still called Dashboard)
+<Dashboard />
+```
+
+That's the only required change — just swap the lazy import source from `Dashboard` → `DashboardPage`.
 
 ---
 
-## Server route
+### 2. `web/src/components/dashboard/index.ts` (optional)
 
-The existing `server/src/routes/system-health.ts` already handles `GET /api/v1/system/health`
-and is registered in `server/src/routes/v1/index.ts`.  No changes needed.
-
-Optionally, the route can be refactored to delegate to `getSystemHealthService()` to remove
-code duplication, but this is not required for the feature to work.
-
----
-
-## Shared type export
-
-`shared/src/types.ts` was updated to re-export from `system-health.types.ts`.
-This makes `HealthLevel`, `HealthStatus`, etc. available via `@veritas-kanban/shared`.
-
-The forbidden file `shared/src/types/index.ts` was **not modified**.
+Add an export for the new components so they're accessible:
+```ts
+export { DashboardPage } from './DashboardPage';
+export { WidgetGrid, type GridWidgetConfig } from './WidgetGrid';
+export { WidgetWrapper } from './WidgetWrapper';
+```
 
 ---
 
-## Polling behaviour
+## No Changes Needed In
 
-| Condition | Interval |
-|-----------|----------|
-| WebSocket connected | 30 s |
-| WebSocket disconnected | 60 s |
-| `staleTime` | 15 s |
+- `web/src/App.tsx` — ✅ unchanged
+- `web/src/contexts/ViewContext.tsx` — ✅ unchanged
+- `web/src/components/layout/Header.tsx` — ✅ unchanged
+- `web/src/components/layout/CommandPalette.tsx` — ✅ unchanged
 
-Filters (`projectId`, `agentId`) are accepted by `SystemHealthService.getStatus()` but are
-not yet wired into the route query-string — reserved for a future scoped-health iteration.
+## Notes
+
+- **CSS**: react-grid-layout CSS is imported locally inside `WidgetGrid.tsx`, not globally.
+- **Mobile**: Drag handle and resize handle are hidden via CSS media query for screens < 768px.
+- **Layout versioning**: Stored at `veritas-kanban-widget-layout-version` in localStorage. Bump `LAYOUT_VERSION` in `useDashboardLayout.ts` when adding new widgets.
+- **Backward compatibility**: `Dashboard.tsx` (the original fixed-grid dashboard) is unchanged. `DashboardPage.tsx` is a new file that replaces it in `KanbanBoard.tsx`.
