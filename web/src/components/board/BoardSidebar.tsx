@@ -6,20 +6,20 @@
  * - Task counters in 2-column grid
  */
 
-import { useEffect, useState, useMemo } from 'react';
+// import { useEffect, useState, useMemo } from 'react'; // hidden — C071
 import { useQuery } from '@tanstack/react-query';
-import { useRealtimeAgentStatus } from '@/hooks/useAgentStatus';
+// import { useRealtimeAgentStatus } from '@/hooks/useAgentStatus'; // hidden — C071
 import { useWebSocketStatus } from '@/contexts/WebSocketContext';
 import { api, Activity } from '@/lib/api';
 import { useTaskCounts } from '@/hooks/useTaskCounts';
 import { useView } from '@/contexts/ViewContext';
 import {
-  Clock,
-  AlertCircle,
-  PlayCircle,
-  PauseCircle,
-  Brain,
-  Cpu,
+  // Clock, // hidden — C071
+  // AlertCircle, // hidden — C071
+  // PlayCircle, // hidden — C071
+  // PauseCircle, // hidden — C071
+  // Brain, // hidden — C071
+  // Cpu, // hidden — C071
   Inbox,
   ListTodo,
   Play,
@@ -27,15 +27,14 @@ import {
   CheckCircle,
   Archive,
   ExternalLink,
-  GitBranch,
-  ShieldAlert,
+  // GitBranch, // hidden — C071
+  // ShieldAlert, // hidden — C071
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button'; // hidden — C071
 import { BudgetCard } from '@/components/dashboard/BudgetCard';
-import { MultiAgentPanel } from './MultiAgentPanel';
+// import { MultiAgentPanel } from './MultiAgentPanel'; // hidden — C071
 
-// ─── Agent State Types ───────────────────────────────────────────────
-
+/* Agent State Types — hidden C071
 type AgentState = 'idle' | 'working' | 'thinking' | 'subagents' | 'error';
 
 interface StateConfig {
@@ -83,9 +82,11 @@ const STATE_CONFIG: Record<AgentState, StateConfig> = {
     description: 'Something went wrong',
   },
 };
+*/
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
+/* formatDuration — hidden C071
 function formatDuration(startTime: string): string {
   const start = new Date(startTime);
   const now = new Date();
@@ -94,6 +95,7 @@ function formatDuration(startTime: string): string {
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
   return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
 }
+*/
 
 function formatTimeAgo(timestamp: string): string {
   const date = new Date(timestamp);
@@ -126,169 +128,169 @@ function Counter({ label, value, icon, color = 'text-muted-foreground' }: Counte
   );
 }
 
-// ─── Agent Status Panel ──────────────────────────────────────────────
+// // ─── Agent Status Panel ──────────────────────────────────────────────
 
-function AgentStatusPanel({ onTaskClick }: { onTaskClick?: (taskId: string) => void }) {
-  const data = useRealtimeAgentStatus();
-  const [uptimeStart, setUptimeStart] = useState<Date | null>(null);
-  const [, forceUpdate] = useState(0);
+// function AgentStatusPanel({ onTaskClick }: { onTaskClick?: (taskId: string) => void }) {
+//   const data = useRealtimeAgentStatus();
+//   const [uptimeStart, setUptimeStart] = useState<Date | null>(null);
+//   const [, forceUpdate] = useState(0);
 
-  // Track uptime
-  useEffect(() => {
-    if (data.status !== 'idle' && !uptimeStart) {
-      setUptimeStart(new Date(data.lastUpdated || Date.now()));
-    } else if (data.status === 'idle' && uptimeStart) {
-      setUptimeStart(null);
-    }
-  }, [data.status, data.lastUpdated, uptimeStart]);
+//   // Track uptime
+//   useEffect(() => {
+//     if (data.status !== 'idle' && !uptimeStart) {
+//       setUptimeStart(new Date(data.lastUpdated || Date.now()));
+//     } else if (data.status === 'idle' && uptimeStart) {
+//       setUptimeStart(null);
+//     }
+//   }, [data.status, data.lastUpdated, uptimeStart]);
 
-  // Tick every second for uptime
-  useEffect(() => {
-    const interval = setInterval(() => forceUpdate((n) => n + 1), 1000);
-    return () => clearInterval(interval);
-  }, []);
+//   // Tick every second for uptime
+//   useEffect(() => {
+//     const interval = setInterval(() => forceUpdate((n) => n + 1), 1000);
+//     return () => clearInterval(interval);
+//   }, []);
 
-  const state: AgentState = useMemo(() => {
-    if (data.status === 'error') return 'error';
-    if (data.subAgentCount > 0) return 'subagents';
-    const s = data.status as string;
-    if (s === 'idle' || s === 'working' || s === 'thinking' || s === 'error')
-      return s as AgentState;
-    return 'idle';
-  }, [data.status, data.subAgentCount]);
+//   const state: AgentState = useMemo(() => {
+//     if (data.status === 'error') return 'error';
+//     if (data.subAgentCount > 0) return 'subagents';
+//     const s = data.status as string;
+//     if (s === 'idle' || s === 'working' || s === 'thinking' || s === 'error')
+//       return s as AgentState;
+//     return 'idle';
+//   }, [data.status, data.subAgentCount]);
 
-  const config = STATE_CONFIG[state];
-  const Icon = config.icon;
+//   const config = STATE_CONFIG[state];
+//   const Icon = config.icon;
 
-  const uptimeDisplay = useMemo(() => {
-    if (!uptimeStart) return null;
-    return formatDuration(uptimeStart.toISOString());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [uptimeStart, forceUpdate]);
+//   const uptimeDisplay = useMemo(() => {
+//     if (!uptimeStart) return null;
+//     return formatDuration(uptimeStart.toISOString());
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, [uptimeStart, forceUpdate]);
 
-  return (
-    <div className="space-y-3 min-h-[220px]">
-      {/* Status header — large icon + state */}
-      <div className="flex items-center gap-3">
-        <div
-          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ring-2 transition-all"
-          style={{ backgroundColor: config.bgColor, ['--tw-ring-color' as string]: config.color }}
-        >
-          <Icon className="w-5 h-5 transition-colors" style={{ color: config.color }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div
-            className="text-sm font-semibold flex items-center gap-2"
-            style={{ color: config.color }}
-          >
-            {state !== 'idle' && (
-              <span
-                className="inline-block w-2 h-2 rounded-full animate-pulse"
-                style={{ backgroundColor: config.color }}
-              />
-            )}
-            {data.subAgentCount > 0 ? `${data.subAgentCount} Agents` : config.label}
-          </div>
-          <div className="text-[11px] text-muted-foreground">{config.description}</div>
-        </div>
-      </div>
+//   return (
+//     <div className="space-y-3 min-h-[220px]">
+//       {/* Status header — large icon + state */}
+//       <div className="flex items-center gap-3">
+//         <div
+//           className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ring-2 transition-all"
+//           style={{ backgroundColor: config.bgColor, ['--tw-ring-color' as string]: config.color }}
+//         >
+//           <Icon className="w-5 h-5 transition-colors" style={{ color: config.color }} />
+//         </div>
+//         <div className="flex-1 min-w-0">
+//           <div
+//             className="text-sm font-semibold flex items-center gap-2"
+//             style={{ color: config.color }}
+//           >
+//             {state !== 'idle' && (
+//               <span
+//                 className="inline-block w-2 h-2 rounded-full animate-pulse"
+//                 style={{ backgroundColor: config.color }}
+//               />
+//             )}
+//             {data.subAgentCount > 0 ? `${data.subAgentCount} Agents` : config.label}
+//           </div>
+//           <div className="text-[11px] text-muted-foreground">{config.description}</div>
+//         </div>
+//       </div>
 
-      {/* Uptime / timer */}
-      {uptimeDisplay && state !== 'idle' && (
-        <div
-          className="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md"
-          style={{ backgroundColor: config.bgColor }}
-        >
-          <Clock className="w-3.5 h-3.5" style={{ color: config.color }} />
-          <span className="font-mono font-medium" style={{ color: config.color }}>
-            {uptimeDisplay}
-          </span>
-        </div>
-      )}
+//       {/* Uptime / timer */}
+//       {uptimeDisplay && state !== 'idle' && (
+//         <div
+//           className="flex items-center gap-2 text-xs px-2.5 py-1.5 rounded-md"
+//           style={{ backgroundColor: config.bgColor }}
+//         >
+//           <Clock className="w-3.5 h-3.5" style={{ color: config.color }} />
+//           <span className="font-mono font-medium" style={{ color: config.color }}>
+//             {uptimeDisplay}
+//           </span>
+//         </div>
+//       )}
 
-      {/* Active agents list — shows each agent + their task */}
-      {state !== 'idle' && (
-        <div className="space-y-1.5">
-          <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
-            {(data.activeAgents?.length || 0) > 1 ? 'Active Agents' : 'Current Task'}
-          </div>
-          {data.activeAgents && data.activeAgents.length > 0 ? (
-            <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
-              {data.activeAgents.map((agent, i) => {
-                const agentState = STATE_CONFIG[agent.status as AgentState] || STATE_CONFIG.working;
-                return (
-                  <button
-                    key={agent.agent || i}
-                    className="flex items-start gap-2 w-full text-left px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors"
-                    onClick={() => agent.taskId && onTaskClick?.(agent.taskId)}
-                  >
-                    <span
-                      className="inline-block w-2 h-2 rounded-full mt-1 shrink-0 animate-pulse"
-                      style={{ backgroundColor: agentState.color }}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="text-[11px] font-semibold truncate"
-                        style={{ color: agentState.color }}
-                      >
-                        {agent.agent}
-                      </div>
-                      {agent.taskTitle && (
-                        <div className="text-[11px] text-foreground/80 truncate leading-snug">
-                          {agent.taskTitle}
-                        </div>
-                      )}
-                      {agent.taskId && (
-                        <div className="text-[10px] text-muted-foreground/60 font-mono truncate">
-                          {agent.taskId}
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          ) : data.activeTaskTitle ? (
-            /* Fallback: single task (no activeAgents array) */
-            <button
-              className="text-xs font-medium leading-snug text-left hover:underline cursor-pointer w-full"
-              onClick={() => data.activeTask && onTaskClick?.(data.activeTask)}
-            >
-              {data.activeTaskTitle}
-              {data.activeTask && (
-                <span className="block text-[10px] text-muted-foreground font-mono mt-0.5">
-                  {data.activeTask}
-                </span>
-              )}
-            </button>
-          ) : null}
-        </div>
-      )}
+//       {/* Active agents list — shows each agent + their task */}
+//       {state !== 'idle' && (
+//         <div className="space-y-1.5">
+//           <div className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+//             {(data.activeAgents?.length || 0) > 1 ? 'Active Agents' : 'Current Task'}
+//           </div>
+//           {data.activeAgents && data.activeAgents.length > 0 ? (
+//             <div className="space-y-1.5 max-h-[160px] overflow-y-auto">
+//               {data.activeAgents.map((agent, i) => {
+//                 const agentState = STATE_CONFIG[agent.status as AgentState] || STATE_CONFIG.working;
+//                 return (
+//                   <button
+//                     key={agent.agent || i}
+//                     className="flex items-start gap-2 w-full text-left px-2 py-1.5 rounded-md hover:bg-muted/50 transition-colors"
+//                     onClick={() => agent.taskId && onTaskClick?.(agent.taskId)}
+//                   >
+//                     <span
+//                       className="inline-block w-2 h-2 rounded-full mt-1 shrink-0 animate-pulse"
+//                       style={{ backgroundColor: agentState.color }}
+//                     />
+//                     <div className="min-w-0 flex-1">
+//                       <div
+//                         className="text-[11px] font-semibold truncate"
+//                         style={{ color: agentState.color }}
+//                       >
+//                         {agent.agent}
+//                       </div>
+//                       {agent.taskTitle && (
+//                         <div className="text-[11px] text-foreground/80 truncate leading-snug">
+//                           {agent.taskTitle}
+//                         </div>
+//                       )}
+//                       {agent.taskId && (
+//                         <div className="text-[10px] text-muted-foreground/60 font-mono truncate">
+//                           {agent.taskId}
+//                         </div>
+//                       )}
+//                     </div>
+//                   </button>
+//                 );
+//               })}
+//             </div>
+//           ) : data.activeTaskTitle ? (
+//             /* Fallback: single task (no activeAgents array) */
+//             <button
+//               className="text-xs font-medium leading-snug text-left hover:underline cursor-pointer w-full"
+//               onClick={() => data.activeTask && onTaskClick?.(data.activeTask)}
+//             >
+//               {data.activeTaskTitle}
+//               {data.activeTask && (
+//                 <span className="block text-[10px] text-muted-foreground font-mono mt-0.5">
+//                   {data.activeTask}
+//                 </span>
+//               )}
+//             </button>
+//           ) : null}
+//         </div>
+//       )}
 
-      {/* Error message */}
-      {data.error && (
-        <div className="flex items-start gap-2 px-2.5 py-2 rounded-md bg-destructive/10 text-destructive">
-          <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
-          <span className="text-xs">{data.error}</span>
-        </div>
-      )}
+//       {/* Error message */}
+//       {data.error && (
+//         <div className="flex items-start gap-2 px-2.5 py-2 rounded-md bg-destructive/10 text-destructive">
+//           <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+//           <span className="text-xs">{data.error}</span>
+//         </div>
+//       )}
 
-      {/* Connection indicator */}
-      {!data.isConnected && (
-        <div className="text-[10px] text-amber-500/70 flex items-center gap-1">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
-          Polling (WebSocket disconnected)
-        </div>
-      )}
+//       {/* Connection indicator */}
+//       {!data.isConnected && (
+//         <div className="text-[10px] text-amber-500/70 flex items-center gap-1">
+//           <span className="w-1.5 h-1.5 rounded-full bg-amber-500/50" />
+//           Polling (WebSocket disconnected)
+//         </div>
+//       )}
 
-      {/* Last updated */}
-      <div className="text-[10px] text-muted-foreground/40 pt-1 border-t border-border/50">
-        Updated {data.lastUpdated ? formatTimeAgo(data.lastUpdated) : 'never'}
-        {data.isStale && data.status !== 'idle' && ' (stale)'}
-      </div>
-    </div>
-  );
-}
+//       {/* Last updated */}
+//       <div className="text-[10px] text-muted-foreground/40 pt-1 border-t border-border/50">
+//         Updated {data.lastUpdated ? formatTimeAgo(data.lastUpdated) : 'never'}
+//         {data.isStale && data.status !== 'idle' && ' (stale)'}
+//       </div>
+//     </div>
+//   );
+// }
 
 // ─── Recent Status Changes ───────────────────────────────────────────
 
@@ -431,18 +433,20 @@ export function BoardSidebar({ onTaskClick }: BoardSidebarProps) {
         </div>
       </div>
 
-      {/* Agent Status — fully expanded, always visible */}
+      {/* Agent Status — hidden C071
       <div className="rounded-lg border bg-card p-3">
         <AgentStatusPanel onTaskClick={onTaskClick} />
       </div>
+      */}
 
-      {/* Multi-Agent Registry — all registered agents */}
+      {/* Multi-Agent Registry — hidden C071
       <div className="rounded-lg border bg-card p-3">
         <h3 className="text-[10px] font-medium text-muted-foreground mb-2 uppercase tracking-wider">
           Agent Registry
         </h3>
         <MultiAgentPanel onTaskClick={onTaskClick} />
       </div>
+      */}
 
       {/* Recent Status Changes */}
       <RecentStatusChanges
@@ -450,6 +454,7 @@ export function BoardSidebar({ onTaskClick }: BoardSidebarProps) {
         onTaskClick={onTaskClick}
       />
 
+      {/* Audit Trail — hidden C071
       <div className="rounded-lg border bg-card p-3">
         <h3 className="mb-2 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           Audit Trail
@@ -466,7 +471,9 @@ export function BoardSidebar({ onTaskClick }: BoardSidebarProps) {
           <ExternalLink className="h-4 w-4" />
         </Button>
       </div>
+      */}
 
+      {/* Policy Engine — hidden C071
       <div className="rounded-lg border bg-card p-3">
         <button
           className="flex w-full items-center justify-between rounded-md border px-3 py-3 text-left transition-colors hover:bg-muted/40"
@@ -484,6 +491,7 @@ export function BoardSidebar({ onTaskClick }: BoardSidebarProps) {
           <ShieldAlert className="h-5 w-5 text-muted-foreground" />
         </button>
       </div>
+      */}
 
       {/* Monthly Budget */}
       <BudgetCard />
