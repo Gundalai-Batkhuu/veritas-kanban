@@ -42,6 +42,7 @@ const createTaskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']).optional().default('medium'),
   project: z.string().optional(),
   sprint: z.string().optional(),
+  owner: z.string().max(50).optional(),
   agent: z.string().max(50).optional(), // "auto" | agent type slug
   reviewScores: reviewScoresSchema.optional(),
   reviewComments: z.array(reviewCommentSchema).optional(),
@@ -137,6 +138,7 @@ const updateTaskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']).optional(),
   project: z.string().optional(),
   sprint: z.string().optional(),
+  owner: z.string().max(50).optional(),
   agent: z.string().max(50).optional(),
   git: gitSchema,
   github: githubSchema,
@@ -309,6 +311,7 @@ router.get(
           type: task.type,
           project: task.project,
           sprint: task.sprint,
+          owner: task.owner,
           created: task.created,
           updated: task.updated,
           subtasks: task.subtasks,

@@ -55,6 +55,7 @@ export class BacklogRepository {
         created: frontmatter.created || new Date().toISOString(),
         updated: frontmatter.updated || new Date().toISOString(),
         agent: frontmatter.agent,
+        owner: frontmatter.owner,
         git: frontmatter.git,
         github: frontmatter.github,
         attempt: frontmatter.attempt,

@@ -94,6 +94,7 @@ function areTaskCardPropsEqual(prev: TaskCardProps, next: TaskCardProps): boolea
     if (pt.type !== nt.type) return false;
     if (pt.project !== nt.project) return false;
     if (pt.sprint !== nt.sprint) return false;
+    if (pt.owner !== nt.owner) return false;
     if (pt.timeTracking?.totalSeconds !== nt.timeTracking?.totalSeconds) return false;
     if (pt.timeTracking?.isRunning !== nt.timeTracking?.isRunning) return false;
     if (pt.attempt?.status !== nt.attempt?.status) return false;
@@ -466,6 +467,11 @@ export const TaskCard = memo(function TaskCard({
                 <span className="text-xs px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-400 flex items-center gap-1">
                   <Zap className="h-3 w-3" />
                   {getSprintLabel(sprints, task.sprint)}
+                </span>
+              )}
+              {task.owner && (
+                <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/20 text-green-400">
+                  {task.owner}
                 </span>
               )}
               <span className="text-xs px-1.5 py-0.5 rounded bg-muted text-muted-foreground">

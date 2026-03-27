@@ -173,6 +173,7 @@ export interface Task {
   priority: TaskPriority;
   project?: string;
   sprint?: string;
+  owner?: string;
   created: string;
   updated: string;
 
@@ -307,6 +308,7 @@ export interface CreateTaskInput {
   priority?: TaskPriority;
   project?: string;
   sprint?: string;
+  owner?: string;
   agent?: AgentType | 'auto'; // Pre-assign an agent (or "auto" for routing engine)
   agents?: AgentType[]; // Multi-agent assignment
   subtasks?: Subtask[]; // Can be provided when creating from a template
@@ -323,6 +325,7 @@ export interface UpdateTaskInput {
   priority?: TaskPriority;
   project?: string;
   sprint?: string;
+  owner?: string;
   agent?: AgentType | 'auto';
   agents?: AgentType[];
   git?: Partial<TaskGit>;
@@ -383,6 +386,7 @@ export interface TaskSummary {
   type: TaskType;
   project?: string;
   sprint?: string;
+  owner?: string;
   agent?: AgentType | 'auto';
   created: string;
   updated: string;

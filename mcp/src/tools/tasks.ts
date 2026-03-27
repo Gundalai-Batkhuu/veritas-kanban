@@ -18,6 +18,7 @@ const CreateTaskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']).default('medium'),
   project: z.string().optional(),
   sprint: z.string().optional(),
+  owner: z.string().optional(),
 });
 
 const UpdateTaskSchema = z.object({
@@ -29,6 +30,7 @@ const UpdateTaskSchema = z.object({
   priority: z.enum(['low', 'medium', 'high']).optional(),
   project: z.string().optional(),
   sprint: z.string().optional(),
+  owner: z.string().optional(),
 });
 
 const TaskIdSchema = z.object({
@@ -109,6 +111,10 @@ export const taskTools = [
           type: 'string',
           description: 'Sprint ID',
         },
+        owner: {
+          type: 'string',
+          description: 'Owning Mind name (e.g. "Simon", "Galen")',
+        },
       },
       required: ['title'],
     },
@@ -153,6 +159,10 @@ export const taskTools = [
         sprint: {
           type: 'string',
           description: 'New sprint ID',
+        },
+        owner: {
+          type: 'string',
+          description: 'Owning Mind name (e.g. "Simon", "Galen")',
         },
       },
       required: ['id'],

@@ -435,6 +435,7 @@ export class TaskService {
         priority: data.priority || 'medium',
         project: data.project,
         sprint: data.sprint,
+        owner: data.owner,
         agent: data.agent,
         created: data.created || new Date().toISOString(),
         updated: data.updated || new Date().toISOString(),
@@ -567,6 +568,7 @@ export class TaskService {
       priority: input.priority || 'medium',
       project: input.project,
       sprint: input.sprint,
+      owner: input.owner,
       agent: input.agent, // Pre-assigned agent (or "auto" for routing)
       subtasks: input.subtasks, // Include subtasks from template
       blockedBy: input.blockedBy, // Include dependencies from blueprint
