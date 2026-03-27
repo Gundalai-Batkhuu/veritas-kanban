@@ -1,0 +1,37 @@
+{
+  "id": "convention-compliance",
+  "name": "Convention Compliance",
+  "description": "Checks for VK-style references, testing disclosure, and structured output.",
+  "builtIn": true,
+  "compositeMethod": "minimum",
+  "scorers": [
+    {
+      "id": "file-references",
+      "name": "Includes file references",
+      "type": "RegexMatch",
+      "target": "output",
+      "weight": 0.34,
+      "pattern": "\\[[^\\]]+\\]\\(/[^)]+\\)"
+    },
+    {
+      "id": "mentions-test-status",
+      "name": "Mentions test status",
+      "type": "KeywordContains",
+      "target": "output",
+      "weight": 0.33,
+      "keywords": ["tested", "verification", "not run", "lint", "vitest"],
+      "matchMode": "any",
+      "partialCredit": true
+    },
+    {
+      "id": "has-structure",
+      "name": "Has concise structure",
+      "type": "CustomExpression",
+      "target": "output",
+      "weight": 0.33,
+      "expression": "Math.min(1, ((output.match(/\\n/g) || []).length + (output.match(/\\./g) || []).length) / 4)"
+    }
+  ],
+  "created": "2026-03-27T09:32:45.130Z",
+  "updated": "2026-03-27T09:32:45.130Z"
+}

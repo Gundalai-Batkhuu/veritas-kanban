@@ -1,0 +1,39 @@
+{
+  "id": "code-quality",
+  "name": "Code Quality",
+  "description": "Checks for verification language, test mentions, and unresolved TODO markers.",
+  "builtIn": true,
+  "compositeMethod": "weightedAvg",
+  "scorers": [
+    {
+      "id": "mentions-verification",
+      "name": "Mentions verification",
+      "type": "KeywordContains",
+      "target": "combined",
+      "weight": 0.35,
+      "keywords": ["test", "tests", "lint", "verified", "validation"],
+      "matchMode": "any",
+      "partialCredit": true
+    },
+    {
+      "id": "avoids-todo",
+      "name": "Avoids TODO/FIXME",
+      "type": "RegexMatch",
+      "target": "output",
+      "weight": 0.3,
+      "pattern": "\\b(?:TODO|FIXME|XXX)\\b",
+      "invert": true
+    },
+    {
+      "id": "balanced-length",
+      "name": "Balanced response length",
+      "type": "NumericRange",
+      "weight": 0.35,
+      "valuePath": "metadata.outputWordCount",
+      "min": 40,
+      "max": 1200
+    }
+  ],
+  "created": "2026-03-27T09:32:45.128Z",
+  "updated": "2026-03-27T09:32:45.128Z"
+}

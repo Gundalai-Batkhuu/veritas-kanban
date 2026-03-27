@@ -28,7 +28,7 @@ import {
 import { useBulkActions } from '@/hooks/useBulkActions';
 import { formatDuration } from '@/hooks/useTimeTracking';
 import { getTypeIcon, getTypeColor } from '@/hooks/useTaskTypes';
-import { getProjectColor, getProjectLabel } from '@/hooks/useProjects';
+import { getProjectBorderColor, getProjectColor, getProjectLabel } from '@/hooks/useProjects';
 import { getSprintLabel } from '@/hooks/useSprints';
 import { useFeatureSettings } from '@/hooks/useFeatureSettings';
 import { useTaskConfig } from '@/contexts/TaskConfigContext';
@@ -238,10 +238,11 @@ export const TaskCard = memo(function TaskCard({
   }, [taskTypes, task.type]);
 
   // Memoize project info
-  const { projectColor, projectLabel } = useMemo(
+  const { projectColor, projectLabel, projectBorderColor } = useMemo(
     () => ({
       projectColor: task.project ? getProjectColor(projects, task.project) : 'bg-muted',
       projectLabel: task.project ? getProjectLabel(projects, task.project) : '',
+      projectBorderColor: task.project ? getProjectBorderColor(projects, task.project) : undefined,
     }),
     [projects, task.project]
   );
@@ -292,7 +293,7 @@ export const TaskCard = memo(function TaskCard({
               isCompact ? 'p-2' : 'p-3',
               'hover:border-muted-foreground/50 hover:bg-card/80 transition-all',
               'border-l-2',
-              typeColor,
+              projectBorderColor ?? typeColor,
               isDragging && 'opacity-50 shadow-lg rotate-2 scale-105',
               isCurrentlyDragging && 'opacity-50',
               isSelected && 'ring-2 ring-primary border-primary',

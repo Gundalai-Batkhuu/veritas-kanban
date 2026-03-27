@@ -1,0 +1,37 @@
+{
+  "id": "task-efficiency",
+  "name": "Task Efficiency",
+  "description": "Rewards concise, action-oriented output and penalizes unnecessary verbosity.",
+  "builtIn": true,
+  "compositeMethod": "geometricMean",
+  "scorers": [
+    {
+      "id": "action-oriented",
+      "name": "Action-oriented phrasing",
+      "type": "KeywordContains",
+      "target": "combined",
+      "weight": 0.4,
+      "keywords": ["implemented", "updated", "fixed", "verified", "added"],
+      "matchMode": "any",
+      "partialCredit": true
+    },
+    {
+      "id": "efficient-size",
+      "name": "Efficient size",
+      "type": "NumericRange",
+      "weight": 0.35,
+      "valuePath": "metadata.totalWordCount",
+      "min": 20,
+      "max": 900
+    },
+    {
+      "id": "limited-filler",
+      "name": "Limited filler",
+      "type": "CustomExpression",
+      "weight": 0.25,
+      "expression": "Math.max(0, 1 - (((output.match(/\\b(?:just|really|very|basically|simply)\\b/gi) || []).length) / Math.max(1, metadata.outputWordCount / 50)))"
+    }
+  ],
+  "created": "2026-03-27T09:32:45.129Z",
+  "updated": "2026-03-27T09:32:45.129Z"
+}
