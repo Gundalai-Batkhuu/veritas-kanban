@@ -470,7 +470,7 @@ export const TaskCard = memo(function TaskCard({
                 </span>
               )}
               {task.owner && (
-                <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/20 text-green-400">
+                <span className={cn('text-xs px-1.5 py-0.5 rounded', projectColor)}>
                   {task.owner}
                 </span>
               )}

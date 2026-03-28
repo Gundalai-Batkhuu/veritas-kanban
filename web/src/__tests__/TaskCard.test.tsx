@@ -86,6 +86,7 @@ vi.mock('@/hooks/useTaskTypes', () => ({
 vi.mock('@/hooks/useProjects', () => ({
   getProjectColor: () => 'bg-blue-500/20 text-blue-400',
   getProjectLabel: () => 'Project One',
+  getProjectBorderColor: () => 'border-blue-500/40',
 }));
 
 vi.mock('@/hooks/useSprints', () => ({
@@ -147,6 +148,23 @@ describe('TaskCard', () => {
     const task = createMockTask({ sprint: 'sprint-1' });
     renderCard(task);
     expect(screen.getByText('Sprint 1')).toBeDefined();
+  });
+
+  it('renders owner badge with project colour when owner and project are set', () => {
+    const task = createMockTask({ owner: 'Galen', project: 'proj-1' });
+    renderCard(task);
+    const badge = screen.getByText('Galen');
+    expect(badge).toBeDefined();
+    expect(badge.className).toContain('bg-blue-500/20');
+    expect(badge.className).toContain('text-blue-400');
+  });
+
+  it('renders owner badge with muted colour when no project is set', () => {
+    const task = createMockTask({ owner: 'Galen', project: undefined });
+    renderCard(task);
+    const badge = screen.getByText('Galen');
+    expect(badge).toBeDefined();
+    expect(badge.className).toContain('bg-muted');
   });
 
   it('calls onClick when clicked', () => {
